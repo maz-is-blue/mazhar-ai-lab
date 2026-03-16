@@ -37,7 +37,7 @@ jobs:
       - name: Build
         env:
           NEXT_PUBLIC_BASE_PATH: /mazhar-ai-lab
-        run: npm run export
+        run: npm run build
 
       - name: Upload Pages Artifact
         uses: actions/upload-pages-artifact@v3

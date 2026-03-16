@@ -18,16 +18,16 @@ npm run dev
 
 ## Static Export
 ```bash
-npm run export
+npm run build
 ```
-The static output is generated in `out/`.
+The static output is generated in `out/` (via `output: 'export'` in `next.config.js`).
 
 ## GitHub Pages Deployment
 If deploying to a project page (e.g., `https://username.github.io/repo-name`), set the base path:
 
 ```bash
 $env:NEXT_PUBLIC_BASE_PATH = "/repo-name"
-npm run export
+npm run build
 ```
 
 For a user/organization page (root domain), do not set the base path.
