@@ -1,4 +1,4 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import ThemeToggle from './ThemeToggle';
 
 export default function NavBar() {
@@ -20,3 +20,5 @@ export default function NavBar() {
     </header>
   );
 }
+
+

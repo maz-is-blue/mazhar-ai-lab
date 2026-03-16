@@ -1,4 +1,4 @@
-export default function BlogPage() {
+﻿export default function BlogPage() {
   return (
     <div className="mx-auto max-w-5xl px-6 py-16">
       <h1 className="section-title">Technical Blog</h1>
@@ -22,3 +22,5 @@ export default function BlogPage() {
     </div>
   );
 }
+
+

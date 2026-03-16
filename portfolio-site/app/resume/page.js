@@ -1,4 +1,4 @@
-export default function ResumePage() {
+﻿export default function ResumePage() {
   return (
     <div className="mx-auto max-w-4xl px-6 py-16">
       <h1 className="section-title">Resume</h1>
@@ -18,3 +18,5 @@ export default function ResumePage() {
     </div>
   );
 }
+
+

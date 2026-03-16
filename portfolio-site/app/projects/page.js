@@ -1,4 +1,4 @@
-import ProjectCard from '../../components/ProjectCard';
+﻿import ProjectCard from '../../components/ProjectCard';
 
 const projects = [
   {
@@ -50,3 +50,5 @@ export default function ProjectsPage() {
     </div>
   );
 }
+
+

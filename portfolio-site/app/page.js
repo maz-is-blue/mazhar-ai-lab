@@ -1,4 +1,4 @@
-import Link from 'next/link';
+﻿import Link from 'next/link';
 import ProjectCard from '../components/ProjectCard';
 
 const projects = [
@@ -108,7 +108,7 @@ export default function HomePage() {
 
       <section className="py-12">
         <div className="card p-8">
-          <h2 className="section-title">Let�s Collaborate</h2>
+          <h2 className="section-title">Let’s Collaborate</h2>
           <p className="mt-3 text-sm text-slate-300">
             Open to consulting and product partnerships for AI systems, data platforms, and LLM applications.
           </p>
@@ -121,3 +121,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+

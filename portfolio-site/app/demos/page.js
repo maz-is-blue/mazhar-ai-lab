@@ -1,4 +1,4 @@
-export default function DemosPage() {
+﻿export default function DemosPage() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-16">
       <h1 className="section-title">AI Demos</h1>
@@ -20,3 +20,5 @@ export default function DemosPage() {
     </div>
   );
 }
+
+

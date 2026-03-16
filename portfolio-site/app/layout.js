@@ -1,4 +1,4 @@
-export const metadata = {
+﻿export const metadata = {
   title: 'Mazhar Jahjah | AI & Data Engineer',
   description: 'AI & Data Engineer specializing in computer vision systems, scalable data pipelines, and LLM-powered applications.'
 };
@@ -18,3 +18,5 @@ export default function RootLayout({ children }) {
     </html>
   );
 }
+
+
