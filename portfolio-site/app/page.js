@@ -7,7 +7,7 @@ const projects = [
     description: 'Computer vision pipeline that extracts structured fields from ID documents using preprocessing, OCR, and JSON validation.',
     diagram: '/diagrams/id-verification.svg',
     github: 'https://github.com/mazharjahjah/ai-id-verification',
-    demo: 'https://huggingface.co/spaces/mazharjahjah/ai-id-verification',
+    demo: '/contact',
     tags: ['CV', 'OCR', 'FastAPI']
   },
   {
@@ -15,7 +15,7 @@ const projects = [
     description: 'Streaming ingestion, sentiment inference, and warehouse delivery with Beam and BigQuery for real-time analytics.',
     diagram: '/diagrams/data-pipeline.svg',
     github: 'https://github.com/mazharjahjah/ai-data-pipeline',
-    demo: 'https://render.com/',
+    demo: '/contact',
     tags: ['Beam', 'Dataflow', 'BigQuery']
   },
   {
@@ -23,7 +23,7 @@ const projects = [
     description: 'Retrieval-augmented QA system for PDFs with chunking, embeddings, and vector search to power LLM answers.',
     diagram: '/diagrams/rag-assistant.svg',
     github: 'https://github.com/mazharjahjah/rag-document-assistant',
-    demo: 'https://huggingface.co/spaces/mazharjahjah/rag-document-assistant',
+    demo: '/contact',
     tags: ['LLM', 'FAISS', 'LangChain']
   },
   {
@@ -31,7 +31,7 @@ const projects = [
     description: 'Personalized travel ranking engine built with Django, scikit-learn, and a REST API for client integration.',
     diagram: '/diagrams/travel-recommender.svg',
     github: 'https://github.com/mazharjahjah/travel-ai-recommender',
-    demo: 'https://render.com/',
+    demo: '/contact',
     tags: ['Django', 'ML', 'Postgres']
   }
 ];
@@ -39,7 +39,11 @@ const projects = [
 export default function HomePage() {
   return (
     <div className="mx-auto max-w-6xl px-6">
-      <section className="py-20">
+      <section className="py-20 grid-bg">
+        <div className="orbit">
+          <div className="glow-orb one" />
+          <div className="glow-orb two" />
+        </div>
         <div className="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
           <div>
             <span className="tag">AI & Data Engineer</span>
@@ -68,6 +72,13 @@ export default function HomePage() {
             </ul>
           </div>
         </div>
+      </section>
+
+      <section className="marquee text-sm text-slate-300">
+        <span>
+          Computer Vision • Data Pipelines • LLM Systems • RAG • FastAPI • Beam • BigQuery • MLOps •
+          Computer Vision • Data Pipelines • LLM Systems • RAG • FastAPI • Beam • BigQuery • MLOps •
+        </span>
       </section>
 
       <section className="py-12">

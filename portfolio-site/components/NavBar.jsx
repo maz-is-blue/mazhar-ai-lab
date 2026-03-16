@@ -11,7 +11,6 @@ export default function NavBar() {
         <div className="flex items-center gap-6 text-sm">
           <Link href="/projects" className="hover:text-aurora">Projects</Link>
           <Link href="/demos" className="hover:text-aurora">AI Demos</Link>
-          <Link href="/blog" className="hover:text-aurora">Blog</Link>
           <Link href="/resume" className="hover:text-aurora">Resume</Link>
           <Link href="/contact" className="hover:text-aurora">Contact</Link>
           <ThemeToggle />

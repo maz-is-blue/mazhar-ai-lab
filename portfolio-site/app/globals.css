@@ -26,6 +26,24 @@ body {
   box-shadow: 0 12px 40px rgba(0,0,0,0.4);
 }
 
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 1rem;
+  padding: 1px;
+  background: linear-gradient(120deg, rgba(70,189,244,0.4), rgba(124,252,154,0.2), transparent 60%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
 .project-grid {
   @apply grid gap-6 md:grid-cols-2;
 }
@@ -42,6 +60,58 @@ body {
 
 .link {
   @apply text-aurora hover:text-neon transition;
+}
+
+.orbit {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.glow-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(20px);
+  animation: float 8s ease-in-out infinite;
+}
+
+.glow-orb.one { width: 220px; height: 220px; background: rgba(70,189,244,0.25); top: 10%; left: 5%; }
+.glow-orb.two { width: 180px; height: 180px; background: rgba(124,252,154,0.2); bottom: 5%; right: 10%; animation-delay: 2s; }
+
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  border-top: 1px solid rgba(148,163,184,0.2);
+  border-bottom: 1px solid rgba(148,163,184,0.2);
+}
+
+.marquee span {
+  display: inline-block;
+  padding: 12px 0;
+  animation: marquee 18s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.grid-bg {
+  position: relative;
+}
+
+.grid-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(148,163,184,0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148,163,184,0.08) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(circle at 30% 20%, #000 0%, transparent 70%);
+  pointer-events: none;
+  opacity: 0.6;
 }
 
 

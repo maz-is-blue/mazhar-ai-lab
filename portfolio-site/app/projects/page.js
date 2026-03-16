@@ -6,7 +6,7 @@ const projects = [
     description: 'Computer vision pipeline that extracts structured fields from ID documents using preprocessing, OCR, and JSON validation.',
     diagram: '/diagrams/id-verification.svg',
     github: 'https://github.com/mazharjahjah/ai-id-verification',
-    demo: 'https://huggingface.co/spaces/mazharjahjah/ai-id-verification',
+    demo: '/contact',
     tags: ['CV', 'OCR', 'FastAPI']
   },
   {
@@ -14,7 +14,7 @@ const projects = [
     description: 'Streaming ingestion, sentiment inference, and warehouse delivery with Beam and BigQuery for real-time analytics.',
     diagram: '/diagrams/data-pipeline.svg',
     github: 'https://github.com/mazharjahjah/ai-data-pipeline',
-    demo: 'https://render.com/',
+    demo: '/contact',
     tags: ['Beam', 'Dataflow', 'BigQuery']
   },
   {
@@ -22,7 +22,7 @@ const projects = [
     description: 'Retrieval-augmented QA system for PDFs with chunking, embeddings, and vector search to power LLM answers.',
     diagram: '/diagrams/rag-assistant.svg',
     github: 'https://github.com/mazharjahjah/rag-document-assistant',
-    demo: 'https://huggingface.co/spaces/mazharjahjah/rag-document-assistant',
+    demo: '/contact',
     tags: ['LLM', 'FAISS', 'LangChain']
   },
   {
@@ -30,7 +30,7 @@ const projects = [
     description: 'Personalized travel ranking engine built with Django, scikit-learn, and a REST API for client integration.',
     diagram: '/diagrams/travel-recommender.svg',
     github: 'https://github.com/mazharjahjah/travel-ai-recommender',
-    demo: 'https://render.com/',
+    demo: '/contact',
     tags: ['Django', 'ML', 'Postgres']
   }
 ];
