@@ -1,0 +1,11 @@
+### Health
+GET http://localhost:8002/health
+
+### Query
+POST http://localhost:8002/query
+Content-Type: application/json
+
+{
+  "document_text": "This is a short document about AI systems.",
+  "question": "What is the document about?"
+}

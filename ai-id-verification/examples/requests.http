@@ -1,0 +1,8 @@
+### Health
+GET http://localhost:8000/health
+
+### Extract
+POST http://localhost:8000/extract
+Content-Type: multipart/form-data
+
+file=@example_id.png

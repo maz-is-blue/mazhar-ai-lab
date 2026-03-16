@@ -1,0 +1,7 @@
+flowchart LR
+  U[User Upload] --> P[Image Preprocessing]
+  P --> S[Field Detection / Segmentation]
+  S --> O[OCR Extraction]
+  O --> J[Structured JSON Output]
+  J --> API[FastAPI Response]
+  J --> UI[Gradio Demo]

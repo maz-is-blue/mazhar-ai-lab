@@ -1,0 +1,6 @@
+Django
+djangorestframework
+pandas
+scikit-learn
+psycopg2-binary
+pytest

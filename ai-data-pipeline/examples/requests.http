@@ -1,0 +1,10 @@
+### Health
+GET http://localhost:8001/health
+
+### Ingest
+POST http://localhost:8001/ingest
+Content-Type: application/json
+
+{
+  "text": "I love this product"
+}

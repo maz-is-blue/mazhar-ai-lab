@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  @apply bg-night text-slate-100 antialiased;
+  background-image:
+    radial-gradient(circle at top right, rgba(70, 189, 244, 0.12), transparent 35%),
+    radial-gradient(circle at 20% 20%, rgba(124, 252, 154, 0.12), transparent 40%);
+}
+
+.section-title {
+  @apply text-3xl md:text-4xl font-semibold tracking-tight;
+}
+
+.card {
+  @apply rounded-2xl border border-slate-800 bg-ink/70 backdrop-blur transition duration-300;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+}
+
+.project-grid {
+  @apply grid gap-6 md:grid-cols-2;
+}
+
+.tag {
+  @apply inline-flex items-center rounded-full border border-slate-700 px-3 py-1 text-xs uppercase tracking-widest text-slate-300;
+}
+
+.fade-up { animation: fadeUp 0.6s ease-out both; }
+
+.diagram {
+  @apply rounded-xl border border-slate-700 bg-slate-950/60 p-3;
+}
+
+.link {
+  @apply text-aurora hover:text-neon transition;
+}

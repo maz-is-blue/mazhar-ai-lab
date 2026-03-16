@@ -1,0 +1,5 @@
+flowchart LR
+  S[Data Source] --> I[Streaming Ingestion]
+  I --> M[AI Inference]
+  M --> W[BigQuery Warehouse]
+  W --> D[Dashboard / Analytics]

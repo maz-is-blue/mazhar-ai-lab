@@ -1,0 +1,11 @@
+### Recommend
+POST http://127.0.0.1:8000/api/recommend/
+Content-Type: application/json
+
+{
+  "budget": 1500,
+  "beach": 1,
+  "culture": 0,
+  "adventure": 1,
+  "season": "summer"
+}

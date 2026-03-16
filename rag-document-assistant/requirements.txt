@@ -1,0 +1,11 @@
+streamlit
+langchain
+faiss-cpu
+openai
+pypdf
+tiktoken
+fastapi
+uvicorn
+pydantic
+pytest
+httpx

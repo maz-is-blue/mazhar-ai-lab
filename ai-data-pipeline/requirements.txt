@@ -1,0 +1,7 @@
+apache-beam[gcp]
+textblob
+fastapi
+uvicorn
+pydantic
+pytest
+httpx

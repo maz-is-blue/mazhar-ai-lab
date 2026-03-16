@@ -1,0 +1,8 @@
+flowchart LR
+  U[Document Upload] --> C[Chunking]
+  C --> E[Embeddings]
+  E --> V[Vector DB (FAISS)]
+  Q[User Question] --> R[Retriever]
+  R --> L[LLM QA]
+  V --> R
+  L --> A[Answer]

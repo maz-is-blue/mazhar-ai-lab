@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="240" viewBox="0 0 600 240">
+  <rect width="600" height="240" rx="20" fill="#0f172a" />
+  <g fill="#38bdf8" font-family="Arial" font-size="16">
+    <text x="40" y="60">Source</text>
+    <text x="170" y="60">Ingest</text>
+    <text x="300" y="60">Inference</text>
+    <text x="440" y="60">BigQuery</text>
+  </g>
+  <g stroke="#7cfc9a" stroke-width="2">
+    <line x1="110" y1="50" x2="160" y2="50" />
+    <line x1="250" y1="50" x2="290" y2="50" />
+    <line x1="390" y1="50" x2="430" y2="50" />
+  </g>
+</svg>
