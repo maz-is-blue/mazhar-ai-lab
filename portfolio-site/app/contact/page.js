@@ -104,7 +104,7 @@ export default function Contact() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
             >
-              {method.link && (
+              {method.link ? (
                 <a
                   href={method.link}
                   target={method.link.startsWith("http") ? "_blank" : undefined}

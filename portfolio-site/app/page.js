@@ -644,7 +644,7 @@ export default function Home() {
                             transition={{ delay: 0.6 + i * 0.1 }}
                           >
                             <motion.div
-                              className={`${stage.color} rounded-full ${stage.indent  "h-2 w-2" : "h-2.5 w-2.5"}`}
+                              className={`${stage.color} rounded-full ${stage.indent ? "h-2 w-2" : "h-2.5 w-2.5"}`}
                               animate={{ scale: [1, 1.2, 1] }}
                               transition={{ duration: 2, repeat: Infinity, delay: i * 0.2 }}
                             />
