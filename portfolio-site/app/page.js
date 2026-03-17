@@ -671,7 +671,7 @@ export default function Home() {
                               <div className="text-violet-400 font-semibold">{item.label}</div>
                               <div className="text-gray-500 text-xs mt-1">{item.desc}</div>
                             </motion.div>
-                            {i < section.flow!.length - 1 && (
+                            {i < section.flow.length - 1 && (
                               <div className="flex justify-center my-2">
                                 <motion.div
                                   animate={{ y: [0, 5, 0] }}
