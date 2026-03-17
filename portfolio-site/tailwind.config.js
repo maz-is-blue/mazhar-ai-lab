@@ -12,7 +12,10 @@ export default {
         ink: '#0f172a',
         steel: '#1e293b',
         neon: '#7cfc9a',
-        aurora: '#46bdf4'
+        aurora: '#46bdf4',
+        background: 'var(--background)',
+        foreground: 'var(--foreground)',
+        border: 'var(--border)'
       },
       boxShadow: {
         glow: '0 0 40px rgba(70, 189, 244, 0.25)'
