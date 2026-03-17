@@ -637,7 +637,7 @@ export default function Home() {
                         {section.stages.map((stage, i) => (
                           <motion.div
                             key={i}
-                            className={`flex items-center gap-3 ${stage.indent  "ml-6" : ""}`}
+                            className={`flex items-center gap-3 ${stage.indent ? "ml-6" : ""}`}
                             initial={{ opacity: 0, x: -20 }}
                             whileInView={{ opacity: 1, x: 0 }}
                             viewport={{ once: true }}

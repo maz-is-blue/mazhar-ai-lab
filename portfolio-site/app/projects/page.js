@@ -458,7 +458,7 @@ export default function Projects() {
                 <motion.div
                   className={`absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-gradient-to-br ${project.gradient} blur-3xl opacity-0`}
                   animate={{
-                    opacity: hoveredIndex === index  0.2 : 0,
+                    opacity: hoveredIndex === index ? 0.2 : 0,
                   }}
                   transition={{ duration: 0.5 }}
                 />

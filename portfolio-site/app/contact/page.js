@@ -104,13 +104,13 @@ export default function Contact() {
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: index * 0.1 }}
             >
-              {method.link  (
+              {method.link && (
                 <a
                   href={method.link}
-                  target={method.link.startsWith("http")  "_blank" : undefined}
+                  target={method.link.startsWith("http") ? "_blank" : undefined}
                   rel={
                     method.link.startsWith("http")
-                       "noopener noreferrer"
+                      ? "noopener noreferrer"
                       : undefined
                   }
                   className="block h-full rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all hover:bg-white/10 hover:border-blue-500/50"
