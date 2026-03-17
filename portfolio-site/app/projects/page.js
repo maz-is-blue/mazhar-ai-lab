@@ -223,7 +223,7 @@ export default function Projects() {
                 <motion.div
                   className={`absolute inset-0 bg-gradient-to-br ${project.gradient} opacity-0`}
                   animate={{
-                    opacity: hoveredIndex === index  0.05 : 0,
+                    opacity: hoveredIndex === index ? 0.05 : 0,
                   }}
                   transition={{ duration: 0.5 }}
                 />
@@ -235,7 +235,7 @@ export default function Projects() {
                     background: `linear-gradient(135deg, transparent, rgba(59, 130, 246, 0.1), transparent)`,
                   }}
                   animate={{
-                    rotate: hoveredIndex === index  360 : 0,
+                    rotate: hoveredIndex === index ? 360 : 0,
                   }}
                   transition={{ duration: 3, ease: "linear" }}
                 />

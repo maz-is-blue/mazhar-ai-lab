@@ -93,7 +93,7 @@ export default function SiteLayout({ children }) {
       <footer className="border-t border-white/10 bg-[#0a0a0f] py-12">
         <div className="mx-auto max-w-7xl px-6">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-gray-400">© 2026 Mazhar Jahjah. All rights reserved.</p>
+            <p className="text-gray-400">(c) 2026 Mazhar Jahjah. All rights reserved.</p>
             <div className="flex space-x-6">
               <a
                 href="https://github.com/mazharjahjah"

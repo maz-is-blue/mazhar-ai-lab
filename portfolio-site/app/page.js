@@ -94,7 +94,7 @@ export default function Home() {
   const scale = useTransform(scrollYProgress, [0, 0.2], [1, 0.8]);
 
   // Floating particles
-  const [particles, setParticles] = useState<Array<{ x: number; y: number; delay: number; duration: number }>>([]);
+  const [particles, setParticles] = useState([]);
 
   useEffect(() => {
     const newParticles = Array.from({ length: 50 }, () => ({
