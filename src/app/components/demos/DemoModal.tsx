@@ -1,5 +1,6 @@
 import { createPortal } from "react-dom";
-import { motion, AnimatePresence } from "motion/react";
+import { useEffect } from "react";
+import { motion } from "motion/react";
 import { X } from "lucide-react";
 import { IDVerificationDemo } from "./IDVerificationDemo";
 import { DataPipelineDemo } from "./DataPipelineDemo";
@@ -45,70 +46,78 @@ interface Props {
 }
 
 export function DemoModal({ demo, onClose }: Props) {
+  useEffect(() => {
+    if (!demo) return;
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [demo, onClose]);
+
+  if (!demo) return null;
+
   return createPortal(
-    <AnimatePresence>
-      {demo && (
-        <>
-          {/* Backdrop */}
-          <motion.div
-            key="demo-backdrop"
-            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
-            style={{ zIndex: 9999 }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-          />
+    <div
+      style={{
+        position: "fixed",
+        inset: 0,
+        zIndex: 9999,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "1rem",
+      }}
+    >
+      {/* Backdrop */}
+      <div
+        onClick={onClose}
+        style={{
+          position: "fixed",
+          inset: 0,
+          background: "rgba(0,0,0,0.85)",
+          backdropFilter: "blur(6px)",
+        }}
+      />
 
-          {/* Modal container */}
-          <motion.div
-            key="demo-modal"
-            className="fixed inset-0 flex items-center justify-center p-4 pointer-events-none"
-            style={{ zIndex: 10000 }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="pointer-events-auto relative w-full max-w-2xl max-h-[90vh] flex flex-col rounded-3xl border border-white/10 bg-[#0a0a0f] shadow-2xl"
-              initial={{ scale: 0.95, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.95, y: 20 }}
-              transition={{ type: "spring", damping: 28, stiffness: 320 }}
+      {/* Modal */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: "spring", damping: 28, stiffness: 300 }}
+        style={{ position: "relative", zIndex: 10000, width: "100%" }}
+        className="max-w-2xl max-h-[90vh] flex flex-col rounded-3xl border border-white/10 bg-[#0a0a0f] shadow-2xl"
+      >
+        {/* Header */}
+        <div className="flex items-start justify-between p-6 border-b border-white/10 flex-shrink-0">
+          <div>
+            <div
+              className={`inline-flex items-center mb-2 rounded-full bg-gradient-to-r ${META[demo].gradient} px-3 py-0.5`}
             >
-              {/* Header */}
-              <div className="flex items-start justify-between p-6 border-b border-white/10 flex-shrink-0">
-                <div>
-                  <div
-                    className={`inline-flex items-center mb-2 rounded-full bg-gradient-to-r ${META[demo].gradient} px-3 py-0.5`}
-                  >
-                    <span className="text-[10px] font-bold text-white uppercase tracking-widest">
-                      Interactive Demo
-                    </span>
-                  </div>
-                  <h2 className="text-xl font-bold text-white">{META[demo].title}</h2>
-                  <p className="text-sm text-gray-400">{META[demo].subtitle}</p>
-                </div>
-                <button
-                  onClick={onClose}
-                  className="p-2 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white transition-colors flex-shrink-0 ml-4"
-                >
-                  <X size={20} />
-                </button>
-              </div>
+              <span className="text-[10px] font-bold text-white uppercase tracking-widest">
+                Interactive Demo
+              </span>
+            </div>
+            <h2 className="text-xl font-bold text-white">{META[demo].title}</h2>
+            <p className="text-sm text-gray-400">{META[demo].subtitle}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white transition-colors flex-shrink-0 ml-4"
+          >
+            <X size={20} />
+          </button>
+        </div>
 
-              {/* Scrollable content */}
-              <div className="overflow-y-auto flex-1 p-6">
-                {demo === "id-verification" && <IDVerificationDemo />}
-                {demo === "data-pipeline" && <DataPipelineDemo />}
-                {demo === "travel-recommender" && <TravelRecommenderDemo />}
-                {demo === "foodiq" && <FoodIQDemo />}
-              </div>
-            </motion.div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>,
+        {/* Scrollable content */}
+        <div className="overflow-y-auto flex-1 p-6">
+          {demo === "id-verification" && <IDVerificationDemo />}
+          {demo === "data-pipeline" && <DataPipelineDemo />}
+          {demo === "travel-recommender" && <TravelRecommenderDemo />}
+          {demo === "foodiq" && <FoodIQDemo />}
+        </div>
+      </motion.div>
+    </div>,
     document.body
   );
 }

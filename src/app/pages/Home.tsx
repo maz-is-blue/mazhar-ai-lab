@@ -7,7 +7,6 @@ import {
   Server,
   Github,
   ArrowRight,
-  Code2,
   Boxes,
   Network,
   Sparkles,
@@ -530,20 +529,9 @@ export function Home() {
 
                   {/* Action Buttons */}
                   <div className="flex gap-4">
-                    <motion.a
-                      href={project.githubUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 rounded-xl bg-white/5 px-6 py-3 font-medium border border-white/10 hover:bg-white/10"
-                      whileHover={{ scale: 1.05, x: 5 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <Code2 size={18} />
-                      View Code
-                    </motion.a>
                     <motion.button
                       onClick={() => setActiveDemo(project.demoType)}
-                      className="flex items-center gap-2 rounded-xl bg-white/5 px-6 py-3 font-medium border border-white/10 hover:bg-white/10"
+                      className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-500 to-violet-600 px-6 py-3 font-medium text-white"
                       whileHover={{ scale: 1.05, x: 5 }}
                       whileTap={{ scale: 0.95 }}
                     >

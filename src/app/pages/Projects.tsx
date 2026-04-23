@@ -3,9 +3,7 @@ import { Link } from "react-router";
 import {
   Eye,
   Database,
-  MessageSquare,
   Plane,
-  Code2,
   ExternalLink,
   GitBranch,
   CheckCircle,
@@ -450,10 +448,8 @@ export function Projects() {
 
                   {/* Action Buttons */}
                   <div className="flex flex-wrap gap-4">
-                    <motion.a
-                      href={project.githubUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <motion.button
+                      onClick={() => setActiveDemo(project.demoType)}
                       className={`group/btn relative flex items-center gap-3 rounded-xl bg-gradient-to-r ${project.gradient} px-8 py-4 font-semibold text-white overflow-hidden shadow-lg`}
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
@@ -464,18 +460,8 @@ export function Projects() {
                         whileHover={{ x: "100%" }}
                         transition={{ duration: 0.5 }}
                       />
-                      <Code2 size={20} className="relative z-10" />
-                      <span className="relative z-10">View Code</span>
-                    </motion.a>
-
-                    <motion.button
-                      onClick={() => setActiveDemo(project.demoType)}
-                      className="flex items-center gap-3 rounded-xl border-2 border-white/20 bg-white/5 px-8 py-4 font-semibold text-white backdrop-blur-xl"
-                      whileHover={{ scale: 1.05, borderColor: "rgba(255, 255, 255, 0.4)" }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <ExternalLink size={20} />
-                      Live Demo
+                      <ExternalLink size={20} className="relative z-10" />
+                      <span className="relative z-10">Live Demo</span>
                     </motion.button>
                   </div>
                 </div>
