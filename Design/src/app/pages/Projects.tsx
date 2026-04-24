@@ -395,7 +395,7 @@ export function Projects() {
                   {/* Tech Stack */}
                   <div className="mb-10">
                     <div className="flex items-center gap-3 mb-6">
-                      <Code2 size={24} className="text-blue-400" />
+                      <Zap size={24} className="text-blue-400" />
                       <h3 className="text-2xl font-bold">Tech Stack</h3>
                     </div>
                     <div className="flex flex-wrap gap-3">

@@ -442,7 +442,7 @@ export function Home() {
               viewport={{ once: true }}
               transition={{ duration: 1 }}
             >
-              <Code2 className="mx-auto text-violet-400" size={48} />
+              <Brain className="mx-auto text-violet-400" size={48} />
             </motion.div>
             <h2 className="mb-4 text-5xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
               Featured Projects
