@@ -25,66 +25,112 @@ const STAGE_LABELS = [
   "Parsing document fields...",
 ];
 
+// Arabic city → country mapping
+const ARABIC_CITIES: Record<string, string> = {
+  "حمص": "Syria 🇸🇾", "دمشق": "Syria 🇸🇾", "حلب": "Syria 🇸🇾", "اللاذقية": "Syria 🇸🇾",
+  "درعا": "Syria 🇸🇾", "دير الزور": "Syria 🇸🇾", "الرقة": "Syria 🇸🇾", "حماه": "Syria 🇸🇾",
+  "بيروت": "Lebanon 🇱🇧", "طرابلس": "Lebanon 🇱🇧", "صيدا": "Lebanon 🇱🇧",
+  "عمّان": "Jordan 🇯🇴", "الزرقاء": "Jordan 🇯🇴", "إربد": "Jordan 🇯🇴",
+  "القاهرة": "Egypt 🇪🇬", "الإسكندرية": "Egypt 🇪🇬", "الجيزة": "Egypt 🇪🇬",
+  "الرياض": "Saudi Arabia 🇸🇦", "جدة": "Saudi Arabia 🇸🇦", "مكة": "Saudi Arabia 🇸🇦",
+  "بغداد": "Iraq 🇮🇶", "البصرة": "Iraq 🇮🇶", "الموصل": "Iraq 🇮🇶",
+  "أبو ظبي": "UAE 🇦🇪", "دبي": "UAE 🇦🇪",
+};
+
+// Convert Arabic-Indic numerals to Western numerals
+function arabicToWestern(s: string): string {
+  return s.replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+}
+
 function extractFields(text: string, lang: string): ExtractedField[] {
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
   const fields: ExtractedField[] = [];
   const isArabic = lang.includes("ara");
 
-  // Dates: numeric formats common globally
-  const dateRe = /\b(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}|\d{4}[\/-]\d{1,2}[\/-]\d{1,2}|\d{1,2}\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*\s+\d{2,4})\b/gi;
+  // --- Dates (Western numerals) ---
+  const dateRe = /\b(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}|\d{4}[\/-]\d{1,2}[\/-]\d{1,2})\b/g;
   const dates = text.match(dateRe) ?? [];
-  if (dates[0]) fields.push({ label: isArabic ? "تاريخ الميلاد / Date of Birth" : "Date of Birth", value: dates[0].toUpperCase(), confidence: 94 });
-  if (dates[1]) fields.push({ label: isArabic ? "تاريخ الانتهاء / Expiry Date" : "Expiry Date", value: dates[1].toUpperCase(), confidence: 91 });
+  if (dates[0]) fields.push({ label: isArabic ? "تاريخ الميلاد / Date of Birth" : "Date of Birth", value: dates[0], confidence: 95 });
+  if (dates[1]) fields.push({ label: isArabic ? "تاريخ الانتهاء / Expiry" : "Expiry Date", value: dates[1], confidence: 92 });
 
-  // Arabic: look for name patterns after Arabic labels like اسم or الاسم
   if (isArabic) {
-    // Arabic lines that contain Arabic script
-    const arabicLines = lines.filter((l) => /[؀-ۿ]/.test(l) && l.length > 2);
+    // --- Arabic-Indic dates e.g. ٢٠٠١-١-١٠ ---
+    const arabicDateRe = /[٠-٩]{1,4}[-/][٠-٩]{1,2}[-/][٠-٩]{1,4}/g;
+    const arabicDates = text.match(arabicDateRe) ?? [];
+    arabicDates.forEach((d, i) => {
+      const converted = arabicToWestern(d);
+      const label = i === 0 ? "تاريخ الميلاد / Date of Birth" : "تاريخ أخر / Additional Date";
+      if (!fields.find((f) => f.value === converted || f.value === d)) {
+        fields.push({ label, value: `${d}  →  ${converted}`, confidence: 93 });
+      }
+    });
 
-    if (arabicLines.length > 0) {
-      fields.push({ label: "Extracted Arabic Text", value: arabicLines.slice(0, 3).join(" / "), confidence: 88 });
+    // --- City detection ---
+    for (const [city, country] of Object.entries(ARABIC_CITIES)) {
+      if (text.includes(city)) {
+        fields.push({ label: "المحافظة / City & Country", value: `${city} — ${country}`, confidence: 91 });
+        break;
+      }
     }
 
-    // Arabic dates in format ١٩٩٠-٠١-٠١ (Arabic-Indic numerals)
-    const arabicDateRe = /[٠-٩]{4}[-/][٠-٩]{1,2}[-/][٠-٩]{1,2}/g;
-    const arabicDates = text.match(arabicDateRe) ?? [];
-    if (arabicDates[0]) fields.push({ label: "Arabic Date Found", value: arabicDates[0], confidence: 90 });
+    // --- Syrian national ID: 11–13 digit number ---
+    const syrIdRe = /\b\d{10,13}\b/g;
+    const syrIds = text.match(syrIdRe) ?? [];
+    // Also check Arabic-Indic 10–13 digit numbers
+    const arabicIdRe = /[٠-٩]{10,13}/g;
+    const arabicIds = text.match(arabicIdRe) ?? [];
+    const allIds = [...syrIds, ...arabicIds.map(arabicToWestern)];
+    if (allIds[0]) fields.push({ label: "رقم الهوية / ID Number", value: allIds[0], confidence: 96 });
 
-    // Extract place names (Arabic cities / محافظة)
-    const cityMatch = text.match(/حمص|دمشق|حلب|بيروت|القاهرة|عمّان|بغداد|الرياض|جدة/);
-    if (cityMatch) fields.push({ label: "City / المدينة", value: cityMatch[0], confidence: 85 });
+    // --- Try to extract a name (longest clean Arabic-script line 3–25 chars) ---
+    const nameCandidate = lines
+      .filter((l) => /^[؀-ۿ\s]+$/.test(l) && l.length >= 4 && l.length <= 30)
+      .sort((a, b) => b.length - a.length)[0];
+    if (nameCandidate) {
+      fields.push({ label: "الاسم / Name", value: nameCandidate, confidence: 78 });
+    }
   }
 
-  // ID / document number
-  const idRe = /\b([A-Z]{1,3}[\s-]?\d{5,10}|\d{7,14}|[A-Z]\d{7,9})\b/g;
-  const ids = text.match(idRe) ?? [];
-  if (ids[0]) fields.push({ label: "Document Number", value: ids[0], confidence: 97 });
+  // --- Latin script ---
+  // MRZ line (passports / machine-readable)
+  const mrzRe = /^[A-Z0-9<]{30,}$/;
+  const mrzLine = lines.find((l) => mrzRe.test(l));
+  if (mrzLine) fields.push({ label: "MRZ Line", value: mrzLine.slice(0, 26) + "...", confidence: 99 });
 
-  // Name in Latin script (2-4 all-caps words)
-  if (!isArabic || lang.includes("eng")) {
+  // Document number (Latin)
+  const idRe = /\b([A-Z]{1,3}[\s-]?\d{5,10}|\d{7,14})\b/g;
+  const ids = text.match(idRe) ?? [];
+  if (ids[0] && !fields.find((f) => f.label.includes("ID"))) {
+    fields.push({ label: "Document Number", value: ids[0], confidence: 97 });
+  }
+
+  // Name in Latin (2–4 ALL-CAPS words)
+  if (!isArabic) {
     const nameRe = /^([A-Z]{2,}(?:\s+[A-Z]{2,}){1,3})$/;
     const nameLine = lines.find((l) => nameRe.test(l) && l.length < 50);
     if (nameLine) fields.push({ label: "Full Name", value: nameLine, confidence: 88 });
   }
 
-  // MRZ
-  const mrzRe = /^[A-Z0-9<]{30,}$/;
-  const mrzLine = lines.find((l) => mrzRe.test(l));
-  if (mrzLine) fields.push({ label: "MRZ Line", value: mrzLine.slice(0, 24) + "...", confidence: 99 });
-
-  // Nationality codes
-  const natRe = /\b(GBR|USA|CAN|AUS|DEU|FRA|SYR|JOR|EGY|SAU|LBN|IRQ|ARE|QAT|KWT|BHR|OMN)\b/;
+  // Nationality code
+  const natRe = /\b(GBR|USA|CAN|AUS|DEU|FRA|SYR|JOR|EGY|SAU|LBN|IRQ|ARE|QAT|KWT)\b/;
   const natMatch = text.match(natRe);
   const countryMap: Record<string, string> = {
-    GBR: "United Kingdom", USA: "United States", SYR: "Syria", JOR: "Jordan",
-    EGY: "Egypt", SAU: "Saudi Arabia", LBN: "Lebanon", IRQ: "Iraq",
-    ARE: "UAE", CAN: "Canada", AUS: "Australia", DEU: "Germany",
+    SYR: "Syria 🇸🇾", JOR: "Jordan 🇯🇴", EGY: "Egypt 🇪🇬", SAU: "Saudi Arabia 🇸🇦",
+    LBN: "Lebanon 🇱🇧", IRQ: "Iraq 🇮🇶", ARE: "UAE 🇦🇪", GBR: "United Kingdom 🇬🇧",
+    USA: "United States 🇺🇸", CAN: "Canada 🇨🇦", AUS: "Australia 🇦🇺", DEU: "Germany 🇩🇪",
   };
   if (natMatch) fields.push({ label: "Nationality", value: countryMap[natMatch[1]] ?? natMatch[1], confidence: 96 });
 
+  // Fallback — show count of detected text lines
   if (fields.length === 0) {
-    const sample = lines.slice(0, 4).join(" · ");
-    fields.push({ label: "Raw Text Detected", value: sample || "No readable text found", confidence: 50 });
+    const arabicLineCount = lines.filter((l) => /[؀-ۿ]/.test(l)).length;
+    fields.push({
+      label: "OCR Status",
+      value: arabicLineCount > 0
+        ? `${arabicLineCount} Arabic text lines detected — try 'Arabic + English' mode for better results`
+        : "No structured fields detected — try a higher resolution image",
+      confidence: 40,
+    });
   }
 
   return fields;
