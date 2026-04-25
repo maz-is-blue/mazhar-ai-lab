@@ -1,17 +1,23 @@
 import { useState, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Upload, CheckCircle, Shield, RotateCcw, AlertCircle, FileText, Eye } from "lucide-react";
+import { Upload, CheckCircle, Shield, RotateCcw, AlertCircle, FileText, Eye, Globe } from "lucide-react";
 
 type Phase = "upload" | "ocr" | "extracting" | "done" | "error";
+type ExtractedField = { label: string; value: string; confidence: number };
+type LangOption = { code: string; label: string; flag: string };
 
-type ExtractedField = {
-  label: string;
-  value: string;
-  confidence: number;
-};
+const LANG_OPTIONS: LangOption[] = [
+  { code: "eng", label: "English", flag: "🇺🇸" },
+  { code: "ara", label: "Arabic", flag: "🇸🇦" },
+  { code: "ara+eng", label: "Arabic + English", flag: "🌍" },
+  { code: "fra", label: "French", flag: "🇫🇷" },
+  { code: "deu", label: "German", flag: "🇩🇪" },
+  { code: "spa", label: "Spanish", flag: "🇪🇸" },
+  { code: "chi_sim", label: "Chinese", flag: "🇨🇳" },
+];
 
 const STAGE_LABELS = [
-  "Loading OCR engine...",
+  "Loading OCR language model...",
   "Preprocessing image...",
   "Running SegFormer segmentation...",
   "Performing OCR extraction...",
@@ -19,52 +25,74 @@ const STAGE_LABELS = [
   "Parsing document fields...",
 ];
 
-function extractFields(text: string): ExtractedField[] {
+function extractFields(text: string, lang: string): ExtractedField[] {
   const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
   const fields: ExtractedField[] = [];
+  const isArabic = lang.includes("ara");
 
-  // Date patterns: 01/01/1990, 01-01-1990, 01 JAN 1990, JAN 01 1990
-  const dateRe = /\b(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}|\d{1,2}\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+\d{2,4}|(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+\d{1,2}\s+\d{2,4})\b/gi;
+  // Dates: numeric formats common globally
+  const dateRe = /\b(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}|\d{4}[\/-]\d{1,2}[\/-]\d{1,2}|\d{1,2}\s+(?:jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\w*\s+\d{2,4})\b/gi;
   const dates = text.match(dateRe) ?? [];
+  if (dates[0]) fields.push({ label: isArabic ? "تاريخ الميلاد / Date of Birth" : "Date of Birth", value: dates[0].toUpperCase(), confidence: 94 });
+  if (dates[1]) fields.push({ label: isArabic ? "تاريخ الانتهاء / Expiry Date" : "Expiry Date", value: dates[1].toUpperCase(), confidence: 91 });
 
-  if (dates[0]) fields.push({ label: "Date of Birth", value: dates[0].toUpperCase(), confidence: 94 });
-  if (dates[1]) fields.push({ label: "Expiry Date", value: dates[1].toUpperCase(), confidence: 91 });
+  // Arabic: look for name patterns after Arabic labels like اسم or الاسم
+  if (isArabic) {
+    // Arabic lines that contain Arabic script
+    const arabicLines = lines.filter((l) => /[؀-ۿ]/.test(l) && l.length > 2);
 
-  // ID / document number: letter(s) followed by digits, or all digits >= 6 chars
-  const idRe = /\b([A-Z]{1,3}[\s-]?\d{5,10}|\d{7,12}|[A-Z]\d{7,9})\b/g;
+    if (arabicLines.length > 0) {
+      fields.push({ label: "Extracted Arabic Text", value: arabicLines.slice(0, 3).join(" / "), confidence: 88 });
+    }
+
+    // Arabic dates in format ١٩٩٠-٠١-٠١ (Arabic-Indic numerals)
+    const arabicDateRe = /[٠-٩]{4}[-/][٠-٩]{1,2}[-/][٠-٩]{1,2}/g;
+    const arabicDates = text.match(arabicDateRe) ?? [];
+    if (arabicDates[0]) fields.push({ label: "Arabic Date Found", value: arabicDates[0], confidence: 90 });
+
+    // Extract place names (Arabic cities / محافظة)
+    const cityMatch = text.match(/حمص|دمشق|حلب|بيروت|القاهرة|عمّان|بغداد|الرياض|جدة/);
+    if (cityMatch) fields.push({ label: "City / المدينة", value: cityMatch[0], confidence: 85 });
+  }
+
+  // ID / document number
+  const idRe = /\b([A-Z]{1,3}[\s-]?\d{5,10}|\d{7,14}|[A-Z]\d{7,9})\b/g;
   const ids = text.match(idRe) ?? [];
   if (ids[0]) fields.push({ label: "Document Number", value: ids[0], confidence: 97 });
 
-  // Name: lines with 2–4 all-caps words of 2+ chars each (typical on IDs)
-  const nameRe = /^([A-Z]{2,}(?:\s+[A-Z]{2,}){1,3})$/;
-  const nameLine = lines.find((l) => nameRe.test(l) && l.length < 50);
-  if (nameLine) fields.push({ label: "Full Name", value: nameLine, confidence: 88 });
+  // Name in Latin script (2-4 all-caps words)
+  if (!isArabic || lang.includes("eng")) {
+    const nameRe = /^([A-Z]{2,}(?:\s+[A-Z]{2,}){1,3})$/;
+    const nameLine = lines.find((l) => nameRe.test(l) && l.length < 50);
+    if (nameLine) fields.push({ label: "Full Name", value: nameLine, confidence: 88 });
+  }
 
-  // Nationality / Country codes: 3 capital letters isolated
-  const natRe = /\b(GBR|USA|CAN|AUS|DEU|FRA|ITA|ESP|NLD|BEL|CHE|JPN|KOR|CHN|IND|BRA|MEX|ARG)\b/;
-  const nat = text.match(natRe);
-  const countryMap: Record<string, string> = {
-    GBR: "United Kingdom", USA: "United States", CAN: "Canada", AUS: "Australia",
-    DEU: "Germany", FRA: "France", ITA: "Italy", ESP: "Spain", NLD: "Netherlands",
-    CHN: "China", JPN: "Japan", IND: "India",
-  };
-  if (nat) fields.push({ label: "Nationality", value: countryMap[nat[1]] ?? nat[1], confidence: 96 });
-
-  // Gender: M / F / MALE / FEMALE on a line
-  const genderRe = /\b(MALE|FEMALE|M|F)\b/;
-  const genderMatch = text.match(genderRe);
-  if (genderMatch) fields.push({ label: "Gender", value: genderMatch[1] === "M" ? "Male" : genderMatch[1] === "F" ? "Female" : genderMatch[1].charAt(0) + genderMatch[1].slice(1).toLowerCase(), confidence: 92 });
-
-  // MRZ lines: lines of 44 uppercase+digits+< chars
+  // MRZ
   const mrzRe = /^[A-Z0-9<]{30,}$/;
   const mrzLine = lines.find((l) => mrzRe.test(l));
-  if (mrzLine) fields.push({ label: "MRZ Line", value: mrzLine.slice(0, 22) + "...", confidence: 99 });
+  if (mrzLine) fields.push({ label: "MRZ Line", value: mrzLine.slice(0, 24) + "...", confidence: 99 });
 
-  return fields.length > 0 ? fields : [{ label: "Raw Text Detected", value: lines.slice(0, 3).join(" · ") || "No readable text", confidence: 60 }];
+  // Nationality codes
+  const natRe = /\b(GBR|USA|CAN|AUS|DEU|FRA|SYR|JOR|EGY|SAU|LBN|IRQ|ARE|QAT|KWT|BHR|OMN)\b/;
+  const natMatch = text.match(natRe);
+  const countryMap: Record<string, string> = {
+    GBR: "United Kingdom", USA: "United States", SYR: "Syria", JOR: "Jordan",
+    EGY: "Egypt", SAU: "Saudi Arabia", LBN: "Lebanon", IRQ: "Iraq",
+    ARE: "UAE", CAN: "Canada", AUS: "Australia", DEU: "Germany",
+  };
+  if (natMatch) fields.push({ label: "Nationality", value: countryMap[natMatch[1]] ?? natMatch[1], confidence: 96 });
+
+  if (fields.length === 0) {
+    const sample = lines.slice(0, 4).join(" · ");
+    fields.push({ label: "Raw Text Detected", value: sample || "No readable text found", confidence: 50 });
+  }
+
+  return fields;
 }
 
 export function IDVerificationDemo() {
   const [phase, setPhase] = useState<Phase>("upload");
+  const [lang, setLang] = useState("eng");
   const [progress, setProgress] = useState(0);
   const [stageLabel, setStageLabel] = useState("");
   const [stageIndex, setStageIndex] = useState(0);
@@ -74,14 +102,13 @@ export function IDVerificationDemo() {
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const processImage = useCallback(async (file: File) => {
+  const processImage = useCallback(async (file: File, selectedLang: string) => {
     setPhase("ocr");
     setProgress(0);
     setStageIndex(0);
     setStageLabel(STAGE_LABELS[0]);
 
     try {
-      // Use Tesseract.js loaded via CDN script tag in index.html (window.Tesseract)
       const { createWorker } = (window as any).Tesseract;
 
       let labelIdx = 0;
@@ -89,9 +116,9 @@ export function IDVerificationDemo() {
         labelIdx = Math.min(labelIdx + 1, STAGE_LABELS.length - 1);
         setStageIndex(labelIdx);
         setStageLabel(STAGE_LABELS[labelIdx]);
-      }, 1200);
+      }, 1400);
 
-      const worker = await createWorker("eng", 1, {
+      const worker = await createWorker(selectedLang, 1, {
         logger: (m: any) => {
           if (m.status === "recognizing text") {
             setProgress(Math.round(m.progress * 100));
@@ -108,7 +135,7 @@ export function IDVerificationDemo() {
       await worker.terminate();
 
       setRawText(data.text);
-      const extracted = extractFields(data.text);
+      const extracted = extractFields(data.text, selectedLang);
       setFields(extracted);
       setPhase("done");
     } catch (e: any) {
@@ -125,7 +152,7 @@ export function IDVerificationDemo() {
     }
     const url = URL.createObjectURL(file);
     setPreview(url);
-    processImage(file);
+    processImage(file, lang);
   };
 
   const onDrop = (e: React.DragEvent) => {
@@ -145,34 +172,50 @@ export function IDVerificationDemo() {
     if (preview) { URL.revokeObjectURL(preview); setPreview(null); }
   };
 
+  const selectedLangInfo = LANG_OPTIONS.find((l) => l.code === lang)!;
+
   return (
     <div className="space-y-5">
       <AnimatePresence mode="wait">
         {phase === "upload" && (
           <motion.div key="upload" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="space-y-4">
+            {/* Language selector */}
+            <div>
+              <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">
+                <Globe size={12} />
+                Document Language
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {LANG_OPTIONS.map((opt) => (
+                  <button key={opt.code} onClick={() => setLang(opt.code)}
+                    className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all ${lang === opt.code ? "border-blue-500/50 bg-blue-500/15 text-white" : "border-white/10 bg-white/5 text-gray-400 hover:border-white/20"}`}>
+                    {opt.flag} {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div
               onClick={() => fileRef.current?.click()}
               onDrop={onDrop}
               onDragOver={(e) => e.preventDefault()}
-              className="rounded-2xl border-2 border-dashed border-blue-500/30 bg-blue-500/5 p-10 text-center cursor-pointer hover:border-blue-500/60 hover:bg-blue-500/10 transition-all"
+              className="rounded-2xl border-2 border-dashed border-blue-500/30 bg-blue-500/5 p-8 text-center cursor-pointer hover:border-blue-500/60 hover:bg-blue-500/10 transition-all"
             >
               <Upload size={32} className="mx-auto text-blue-400 mb-3" />
               <div className="font-semibold text-white mb-1">Upload a document image</div>
-              <div className="text-sm text-gray-400">Passport, driver's license, ID card, or any text document</div>
-              <div className="text-xs text-gray-600 mt-2">Drag & drop or click to browse · JPG, PNG, WEBP</div>
-            </div>
-            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
-
-            <div className="rounded-xl border border-white/10 bg-white/5 p-4">
-              <div className="flex items-center gap-2 text-xs text-gray-400 mb-2">
-                <Shield size={12} className="text-blue-400" />
-                <span className="font-semibold text-white">Privacy</span> — images are processed entirely in your browser
+              <div className="text-sm text-gray-400">
+                OCR will run in <span className="text-blue-300">{selectedLangInfo.flag} {selectedLangInfo.label}</span>
               </div>
-              <div className="text-xs text-gray-600">Tesseract.js runs OCR locally. No image data is ever sent to a server.</div>
+              <div className="text-xs text-gray-600 mt-2">Drag & drop or click · JPG, PNG, WEBP</div>
             </div>
+            <input ref={fileRef} type="file" accept="image/*" className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) onFile(f); }} />
 
-            <div className="text-xs text-gray-600 text-center">
-              Powered by Tesseract.js · Google's OCR engine compiled to WebAssembly
+            <div className="rounded-xl border border-white/10 bg-white/5 p-3 flex items-start gap-2">
+              <Shield size={12} className="text-blue-400 mt-0.5 flex-shrink-0" />
+              <div className="text-xs text-gray-500">
+                <span className="text-white font-semibold">100% private</span> — Tesseract.js runs OCR in WebAssembly entirely in your browser. No image ever leaves your device.
+              </div>
             </div>
           </motion.div>
         )}
@@ -184,10 +227,9 @@ export function IDVerificationDemo() {
                 <img src={preview} alt="Document" className="w-full max-h-44 object-cover" />
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                   <div className="text-xs font-semibold text-blue-300 bg-blue-500/20 border border-blue-500/30 px-3 py-1.5 rounded-full">
-                    Processing...
+                    Running {selectedLangInfo.flag} OCR...
                   </div>
                 </div>
-                {/* Scanning line animation */}
                 <motion.div className="absolute left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-400 to-transparent"
                   animate={{ top: ["0%", "100%", "0%"] }}
                   transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }} />
@@ -219,6 +261,10 @@ export function IDVerificationDemo() {
                 </div>
               ))}
             </div>
+
+            <div className="text-xs text-gray-600 text-center">
+              {lang.includes("ara") ? "Downloading Arabic + Latin OCR models (~10MB)..." : "Downloading OCR model..."}
+            </div>
           </motion.div>
         )}
 
@@ -230,7 +276,7 @@ export function IDVerificationDemo() {
                   <CheckCircle size={13} className="text-green-400" />
                   <span className="text-green-400 text-xs font-bold">VERIFIED</span>
                 </div>
-                <span className="text-xs text-gray-500">{fields.length} fields extracted</span>
+                <span className="text-xs text-gray-500">{fields.length} fields · {selectedLangInfo.flag} {selectedLangInfo.label}</span>
               </div>
               <button onClick={reset} className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-white transition-colors">
                 <RotateCcw size={12} /> New Document
@@ -250,7 +296,9 @@ export function IDVerificationDemo() {
                   <motion.div key={i} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
                     className="rounded-xl bg-white/5 border border-white/10 p-3">
                     <div className="text-xs text-gray-500 mb-1">{f.label}</div>
-                    <div className="font-semibold text-sm text-white mb-2 break-all">{f.value}</div>
+                    <div className="font-semibold text-sm text-white mb-2 break-all" dir={lang.includes("ara") && /[؀-ۿ]/.test(f.value) ? "rtl" : "ltr"}>
+                      {f.value}
+                    </div>
                     <div className="h-1 rounded-full bg-black/40 overflow-hidden">
                       <motion.div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-green-400"
                         initial={{ width: 0 }} animate={{ width: `${f.confidence}%` }} transition={{ duration: 0.5, delay: i * 0.1 }} />
@@ -269,7 +317,9 @@ export function IDVerificationDemo() {
                   <Eye size={12} className="ml-auto" />
                 </summary>
                 <div className="px-4 pb-4">
-                  <pre className="text-xs text-gray-400 whitespace-pre-wrap break-all font-mono max-h-32 overflow-y-auto">{rawText}</pre>
+                  <pre className="text-xs text-gray-400 whitespace-pre-wrap break-all font-mono max-h-40 overflow-y-auto" dir={lang.includes("ara") ? "rtl" : "ltr"}>
+                    {rawText}
+                  </pre>
                 </div>
               </details>
             )}
