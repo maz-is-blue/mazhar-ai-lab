@@ -81,8 +81,8 @@ export function IDVerificationDemo() {
     setStageLabel(STAGE_LABELS[0]);
 
     try {
-      // Dynamic import keeps Tesseract out of initial bundle
-      const { createWorker } = await import("tesseract.js");
+      // Use Tesseract.js loaded via CDN script tag in index.html (window.Tesseract)
+      const { createWorker } = (window as any).Tesseract;
 
       let labelIdx = 0;
       const labelInterval = setInterval(() => {
