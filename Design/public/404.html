@@ -4,14 +4,11 @@
     <meta charset="utf-8" />
     <title>Mazhar Jahjah — AI Engineer</title>
     <script>
-      // GitHub Pages SPA redirect: convert path to query string so index.html can pick it up
-      var l = window.location;
-      l.replace(
-        l.protocol + '//' + l.host + l.pathname.split('/').slice(0, 2).join('/') +
-        '/?p=/' + l.pathname.slice(1).split('/').slice(1).join('/').replace(/&/g, '~and~') +
-        (l.search ? '&q=' + l.search.slice(1).replace(/&/g, '~and~') : '') +
-        l.hash
-      );
+      // Save the full path the user wanted, then redirect to the SPA root.
+      // The root index.html will read this and hand it to React Router.
+      var dest = window.location.pathname + window.location.search + window.location.hash;
+      sessionStorage.setItem('spa_redirect', dest);
+      window.location.replace('/mazhar-ai-lab/');
     </script>
   </head>
   <body></body>

@@ -5,21 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mazhar Jahjah — AI Engineer</title>
     <script>
-      // GitHub Pages SPA: restore path from query string set by 404.html
+      // Restore the path that was saved by 404.html before React mounts.
       (function () {
-        var redirect = sessionStorage.redirect;
-        delete sessionStorage.redirect;
-        if (redirect && redirect !== location.href) {
-          history.replaceState(null, null, redirect);
-        }
-        // Handle ?p= redirect from 404.html
-        var query = window.location.search;
-        if (query.startsWith('?p=/')) {
-          var path = query.slice(3).replace(/~and~/g, '&');
-          var rest = path.split('&q=');
-          history.replaceState(null, null,
-            window.location.pathname + rest[0] + (rest[1] ? '?' + rest[1] : '') + window.location.hash
-          );
+        var dest = sessionStorage.getItem('spa_redirect');
+        if (dest) {
+          sessionStorage.removeItem('spa_redirect');
+          // Only replace if it differs from current location
+          if (dest !== window.location.pathname + window.location.search + window.location.hash) {
+            window.history.replaceState(null, null, dest);
+          }
         }
       })();
     </script>
